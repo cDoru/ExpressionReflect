@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>ExpressionReflect by mgernand</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>ExpressionReflect</h1>
+        <h2>Provides the ability to &quot;compile&quot; expressions to delegates without using Reflection.Emit but only using reflection.</h2>
+        <a href="https://github.com/mgernand/ExpressionReflect" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="expressionreflect" class="anchor" href="#expressionreflect"><span class="octicon octicon-link"></span></a>ExpressionReflect</h1>
+
+<h2>
+<a name="why" class="anchor" href="#why"><span class="octicon octicon-link"></span></a>Why?</h2>
+
+<p>Provides the ability to "compile" expressions to delegates without using Reflection.Emit but only using reflection.
+The created delegate will make use of reflection to execute the expression when it is invoked. This is much slower
+than executing a compiled delegate of an expression!</p>
+
+<p>This framework is intended to be used where dynamic code creation is not possible. The main purpose is the useage with
+Xamarin.iOS due to it's restriction on Reflection.Emit.</p>
+
+<h2>
+<a name="how" class="anchor" href="#how"><span class="octicon octicon-link"></span></a>How?</h2>
+
+<p>The expression tree is traversed and respective reflection calls are created and invoked. This is very slow compared 
+to compiled expressions, so it should only be used with simple expressions.</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>The usage is fairly simple. It's just an extension method on a expression.</p>
+
+<div class="highlight"><pre><span class="n">Expression</span><span class="p">&lt;</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;&gt;</span> <span class="n">expression</span> <span class="p">=</span> <span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Firstname</span><span class="p">;</span>
+<span class="n">Func</span><span class="p">&lt;</span><span class="n">Customer</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;</span> <span class="n">reflection</span> <span class="p">=</span> <span class="n">expression</span><span class="p">.</span><span class="n">Reflect</span><span class="p">();</span>
+<span class="kt">string</span> <span class="n">result</span> <span class="p">=</span> <span class="n">reflection</span><span class="p">.</span><span class="n">Invoke</span><span class="p">(</span><span class="n">customer</span><span class="p">);</span>
+</pre></div>
+
+<p>The extension method <code>Reflect()</code> will return a delegate that will execute the reflection-based expression evaluation
+internally.</p>
+
+<h2>
+<a name="what-is-supported" class="anchor" href="#what-is-supported"><span class="octicon octicon-link"></span></a>What is supported?</h2>
+
+<p>The following built-in delegates are supported at the moment:</p>
+
+<ul>
+<li>
+<code>Func&lt;T, TResult&gt;</code> (all variations)</li>
+<li>
+<code>Action</code> und <code>Action&lt;T&gt;</code> (all variations)</li>
+<li><code>Predicate&lt;T&gt;</code></li>
+</ul><p>The following expression types are supported at the moment:</p>
+
+<ul>
+<li>
+<p>Property getter</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Firstname</span>
+</pre></div>
+</li>
+<li>
+<p>Property getter with subsequent method call</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Firstname</span><span class="p">.</span><span class="n">ToLower</span><span class="p">();</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value
+x =&gt; x.CalculateAge()</p>
+
+<pre><code></code></pre>
+</li>
+</ul><ul>
+<li>
+<p>Method call with return value and subsequent method call</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">ToString</span><span class="p">().</span><span class="n">ToLower</span><span class="p">();</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value and expression parameters</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">CalculateLength</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Firstname</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value, expression parameters and binary expression</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Calculate</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Age</span> <span class="p">+</span> <span class="n">x</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value, expression parameters, binary expression and constant</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Calculate</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Age</span> <span class="p">+</span> <span class="m">100</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value, expression parameters, binary expression and local variable</p>
+
+<div class="highlight"><pre><span class="kt">int</span> <span class="k">value</span> <span class="p">=</span> <span class="m">666</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Calculate</span><span class="p">(</span><span class="k">value</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value, expression parameters and nested constructor call.</p>
+
+<div class="highlight"><pre><span class="kt">int</span> <span class="k">value</span> <span class="p">=</span> <span class="m">666</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Calculate</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="k">value</span><span class="p">));</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value, expression parameters and nested method call.</p>
+
+<div class="highlight"><pre><span class="n">x</span><span class="p">.</span><span class="n">Calculate</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">CalculateAge</span><span class="p">());</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value, expression parameters and local delegate call.</p>
+
+<div class="highlight"><pre><span class="n">Func</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="n">method</span> <span class="p">=</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="m">100</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Calculate</span><span class="p">(</span><span class="n">method</span><span class="p">());</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value, expression parameters and local delegate call with parameters.</p>
+
+<div class="highlight"><pre><span class="n">Func</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">&gt;</span> <span class="n">method</span> <span class="p">=</span> <span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span> <span class="p">+</span> <span class="m">100</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Calculate</span><span class="p">(</span><span class="n">method</span><span class="p">(</span><span class="m">10</span><span class="p">));</span>
+</pre></div>
+</li>
+<li>
+<p>Method call with return value and mixed parameters</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">CalculateLength</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Firstname</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="m">10</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">();</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with subsequent method call</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">();</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Lastname</span><span class="p">,</span> <span class="n">x</span><span class="p">.</span><span class="n">Firstname</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters and binary expression</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Age</span> <span class="p">+</span> <span class="n">x</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters, binary expression and constant</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Age</span> <span class="p">+</span> <span class="m">100</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters, binary expression and local variable </p>
+
+<div class="highlight"><pre><span class="kt">int</span> <span class="k">value</span> <span class="p">=</span> <span class="m">666</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="k">value</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters and nested costructor call</p>
+
+<div class="highlight"><pre><span class="kt">int</span> <span class="k">value</span> <span class="p">=</span> <span class="m">666</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="k">value</span><span class="p">));</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters and nested method call.</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">CalculateAge</span><span class="p">());</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters and local delegate call.</p>
+
+<div class="highlight"><pre><span class="n">Func</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="n">method</span> <span class="p">=</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="m">100</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="n">method</span><span class="p">());</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with expression parameters and local delegate call with parameters.</p>
+
+<div class="highlight"><pre><span class="n">Func</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">&gt;</span> <span class="n">method</span> <span class="p">=</span> <span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span> <span class="p">+</span> <span class="m">100</span><span class="p">;</span>
+<span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="n">method</span><span class="p">(</span><span class="m">10</span><span class="p">));</span>
+</pre></div>
+</li>
+<li>
+<p>Constructor call with mixed parameters</p>
+
+<div class="highlight"><pre><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="n">Customer</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Lastname</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="m">10</span><span class="p">,</span> <span class="n">x</span><span class="p">.</span><span class="n">Firstname</span><span class="p">);</span>
+</pre></div>
+</li>
+</ul><h2>
+<a name="supported-features" class="anchor" href="#supported-features"><span class="octicon octicon-link"></span></a>Supported features</h2>
+
+<ul>
+<li><code>Func&lt;T, TResult&gt;</code></li>
+<li>
+<code>Action</code> und <code>Action&lt;T&gt;</code>
+</li>
+<li><code>Predicate&lt;T&gt;</code></li>
+<li>Property getters including indexers</li>
+<li>Field access</li>
+<li>Method calls with mixed parameters</li>
+<li>Constructor invocations with mixed parameters</li>
+<li>Local variables</li>
+<li>Constant expressions</li>
+<li>Local delegates</li>
+<li>Local delegates with parameters (local and constant, binary expression)</li>
+<li>Binary expressions including 'is' operator</li>
+<li>Unary expressions (almost complete)</li>
+<li>Array access</li>
+<li>Array creation (simple arrays)</li>
+<li>Object initializers (objects, lists, dictionaries)</li>
+<li>Ternary conditionals</li>
+<li>Nested expressions (f.e. LINQ extension methods: <code>x =&gt; x.FirstOrDefault(y.Name == "John")</code>)</li>
+</ul><p>All this features can be combined to more complex expressions.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/mgernand/ExpressionReflect/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/mgernand/ExpressionReflect/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/mgernand/ExpressionReflect"></a> is maintained by <a href="https://github.com/mgernand">mgernand</a>.</p>
+
+          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
